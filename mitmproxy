@@ -23,7 +23,7 @@ from optparse import OptionParser, OptionGroup
 if __name__ == '__main__':
     parser = OptionParser(
                 usage = "%prog [options] output",
-                version="%prog 0.1",
+                version="%prog 0.2",
             )
 
     parser.add_option(
