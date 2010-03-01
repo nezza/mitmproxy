@@ -18,55 +18,28 @@
 import sys, os.path
 from libmproxy import proxy, controller, console, utils
 from optparse import OptionParser, OptionGroup
+from cfgopter import cfgopter
 
 
 if __name__ == '__main__':
-    parser = OptionParser(
-                usage = "%prog [options] output",
-                version="%prog 0.2",
-            )
+    cfgopt = cfgopter()
+    cfgopt.load('config.ini')
+    cfg = cfgopt.get_config()
+    cfgopt.add_opt(short_opt="-c", long_opt="--cert", section=cfg.main,
+                   option = "cert", label="CERT", help="SSL certificate file.")
+    cfgopt.add_opt(short_opt="-p", long_opt="--port", section=cfg.main,
+                   option="port", label="PORT", help="Port to listen on.")
+    cfgopt.add_opt(short_opt="-B", long_opt="--beep", section=cfg.filters,
+                   option="beep", label="EXPRESSION", help="Beep filter.")
+    cfgopt.add_opt(short_opt="-l", long_opt="--limit", section=cfg.filters,
+                   option="limit", label="EXPRESSION", help="Limit filter.")
+    cfgopt.add_opt(short_opt="-i", long_opt="--intercept", section=cfg.filters,
+                   option="intercept", label="EXPRESSION", help="Intercept filter.")
+    cfgopt.add_opt(short_opt="-s", long_opt="--sticky", section=cfg.filters,
+                   option="sticky", label="EXPRESSION", help="Sticky cookie filter.")
+    cfgopt.parse_args()
 
-    parser.add_option(
-        "-c", "--cert", action="store",
-        type = "str", dest="cert", default="~/.mitmproxy/cert.pem",
-        help = "SSL certificate file."
-    )
-
-    parser.add_option(
-        "-p", "--port", action="store",
-        type = "int", dest="port", default=8080,
-        help = "Port."
-    )
-
-    group = OptionGroup(
-                        parser,
-                        "Filters",
-                        "See help in mitmproxy for filter expression syntax."
-                    )
-    group.add_option(
-        "-B", "--beep", action="store",
-        type = "str", dest="beep", default=None,
-        help = "Beep filter expression."
-    )
-    group.add_option(
-        "-l", "--limit", action="store",
-        type = "str", dest="limit", default=None,
-        help = "Limit filter expression."
-    )
-    group.add_option(
-        "-i", "--intercept", action="store",
-        type = "str", dest="intercept", default=None,
-        help = "Intercept filter expression."
-    )
-    group.add_option(
-        "-s", "--sticky", action="store",
-        type = "str", dest="sticky", default=None,
-        help = "Sticky cookie filter expression."
-    )
-    parser.add_option_group(group)
-
-    options, args = parser.parse_args()
-    certpath = os.path.expanduser(options.cert)
+    certpath = os.path.expanduser(cfg.main.cert)
     
     if not os.path.exists(certpath):
         print >> sys.stderr, "Creating bogus certificate at %s"%options.cert
@@ -75,6 +48,6 @@ if __name__ == '__main__':
     proxy.config = proxy.Config(
         certpath
     )
-    server = proxy.ProxyServer(options.port)
-    m = console.ConsoleMaster(server, options)
+    server = proxy.ProxyServer(int(cfg.main.port))
+    m = console.ConsoleMaster(server, cfg.filters)
     m.run()
