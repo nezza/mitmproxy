@@ -22,7 +22,19 @@ from cfgopter import cfgopter
 
 
 if __name__ == '__main__':
-    cfgopt = cfgopter()
+    defaults = {
+        'main': {
+            'cert': '~/.mitmproxy/cert.pem',
+            'port': '8080',
+            },
+        'filters': {
+            'beep': '',
+            'limit': '',
+            'intercept': '',
+            'sticky': '',
+            }
+        }
+    cfgopt = cfgopter(defaults=defaults)
     cfgopt.load('config.ini')
     cfg = cfgopt.get_config()
     cfgopt.add_opt(short_opt="-c", long_opt="--cert", section=cfg.main,
